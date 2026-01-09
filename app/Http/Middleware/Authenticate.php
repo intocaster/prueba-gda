@@ -35,8 +35,26 @@ class Authenticate
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        if ($this->auth->guard($guard)->guest()) {
-            return response('Unauthorized.', 401);
+        // 1. Obtener el token del header Authorization: Bearer {token}
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return response()->json(['success' => false, 'message' => 'Token no proporcionado'], 401);
+        }
+
+        // 2. Buscar el token en la tabla correcta
+        $session = \DB::table('personal_access_tokens')
+            ->where('token', $token)
+            ->first();
+
+        // 3. Validar si existe
+        if (!$session) {
+            return response()->json(['success' => false, 'message' => 'Token inválido'], 401);
+        }
+
+        // 4. Validar si expiró
+        if (new \DateTime() > new \DateTime($session->expires_at)) {
+            return response()->json(['success' => false, 'message' => 'El token ha expirado'], 401);
         }
 
         return $next($request);

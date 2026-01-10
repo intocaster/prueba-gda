@@ -28,7 +28,7 @@ class CustomerController extends Controller
             ->first();
 
         if (!$comuna || !$region) {
-            return response()->json(['success' => false, 'message' => 'Región o Comuna inválida'], 400);
+            return response()->json(['success' => false, 'message' => 'Región o Comuna inválida o inactiva'], 400);
         }
 
         try {
@@ -39,77 +39,57 @@ class CustomerController extends Controller
                 'email'     => $request->input('email'),
                 'name'      => $request->input('name'),
                 'last_name' => $request->input('last_name'),
-                'address'   => $request->input('address'),
+                'address'   => $request->input('address'), // Ya lo tienes, ¡bien!
                 'date_reg'  => Carbon::now(),
                 'status'    => 'A'
             ]);
-            return response()->json(['success' => true, 'message' => 'Registrado'], 201);
+            return response()->json(['success' => true, 'message' => 'Cliente registrado con éxito'], 201);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'Error al registrar: ' . $e->getMessage()], 500);
         }
     }
 
     /**
- * PUNTO 2: Consulta de Clientes (Corregido)
- */
-public function show(Request $request)
-{
-    $search = $request->query('search');
+     * PUNTO 2: Búsqueda de Clientes (Solo activos y que coincidan con DNI o Apellido)
+     */
+    public function search(Request $request)
+    {
+        $search = $request->input('search'); // Puede ser DNI o Apellido
 
-    $query = DB::table('customers as c')
-        ->join('regions as r', 'c.id_reg', '=', 'r.id_reg')
-        ->join('communes as co', 'c.id_com', '=', 'co.id_com')
-        ->select('c.name', 'c.last_name', 'c.dni', 'c.email', 'r.description as region', 'co.description as comuna')
-        ->where('c.status', 'A');
+        $customers = DB::table('customers')
+            ->join('regions', 'customers.id_reg', '=', 'regions.id_reg')
+            ->join('communes', 'customers.id_com', '=', 'communes.id_com')
+            ->select(
+                'customers.name', 
+                'customers.last_name', 
+                'customers.address', // Agregado para el reporte
+                'regions.description as region', 
+                'communes.description as commune'
+            )
+            ->where('customers.status', 'A')
+            ->where(function($query) use ($search) {
+                $query->where('customers.dni', $search)
+                      ->orWhere('customers.last_name', 'like', "%$search%");
+            })
+            ->get();
 
-    // Si hay búsqueda, aplicamos el filtro
-    if ($search) {
-        $query->where(function($q) use ($search) {
-            $q->where('c.dni', $search)->orWhere('c.email', $search);
-        });
-        
-        $customer = $query->first(); // Para un solo resultado específico
-
-        if (!$customer) {
-            return response()->json(['success' => false, 'message' => 'No encontrado'], 404);
-        }
-
-        return response()->json(['success' => true, 'data' => $customer]);
+        return response()->json($customers);
     }
-
-    // SI NO HAY BÚSQUEDA: Devolvemos la lista completa de activos
-    $customers = $query->get();
-
-    return response()->json(['success' => true, 'data' => $customers]);
-}
 
     /**
      * PUNTO 3: Eliminación Lógica
      */
     public function destroy($dni)
     {
-        // Buscamos si existe el cliente y si no ha sido "borrado" antes
-        $customer = DB::table('customers')
+        $updated = DB::table('customers')
             ->where('dni', $dni)
-            ->where('status', 'A')
-            ->first();
-
-        if (!$customer) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El cliente no existe o ya fue eliminado'
-            ], 404);
-        }
-
-        // Realizamos el UPDATE en lugar de un DELETE físico
-        DB::table('customers')
-            ->where('dni', $dni)
+            ->where('status', '!=', 'trash')
             ->update(['status' => 'trash']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Cliente enviado a la papelera correctamente'
-        ]);
+        if ($updated) {
+            return response()->json(['success' => true, 'message' => 'Cliente eliminado (lógico)']);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Cliente no encontrado'], 404);
     }
 }
-

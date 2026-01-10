@@ -49,10 +49,11 @@ CREATE TABLE IF NOT EXISTS `customers` (
   UNIQUE KEY `email_UNIQUE` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
--- Volcando datos para la tabla mydb.customers: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla mydb.customers: ~3 rows (aproximadamente)
 INSERT INTO `customers` (`dni`, `id_reg`, `id_com`, `email`, `name`, `last_name`, `address`, `date_reg`, `status`) VALUES
 	('12345678-9', 1, 1, 'juan.perez@example.com', 'Juan', 'Pérez', 'Calle Falsa 123', '2026-01-09 21:44:44', 'trash'),
-	('98765432-1', 1, 1, 'm.lopez@email.com', 'Maria', 'Lopez', NULL, '2026-01-09 21:55:47', 'trash');
+	('98765432-1', 1, 1, 'm.lopez@email.com', 'Maria', 'Lopez', NULL, '2026-01-09 21:55:47', 'trash'),
+	('99.999.999-K', 1, 1, 'test@qa.com', 'Prueba', 'Final', 'Avenida Siempre Viva 742', '2026-01-10 04:05:15', 'A');
 
 -- Volcando estructura para tabla mydb.logs
 CREATE TABLE IF NOT EXISTS `logs` (
@@ -62,9 +63,9 @@ CREATE TABLE IF NOT EXISTS `logs` (
   `data` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb3;
 
--- Volcando datos para la tabla mydb.logs: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla mydb.logs: ~46 rows (aproximadamente)
 INSERT INTO `logs` (`id`, `ip_address`, `type`, `data`, `created_at`) VALUES
 	(1, '::1', 'INPUT', '[]', '2026-01-09 21:41:01'),
 	(2, '::1', 'OUTPUT', '{"success":true,"data":[]}', '2026-01-09 21:41:01'),
@@ -109,7 +110,9 @@ INSERT INTO `logs` (`id`, `ip_address`, `type`, `data`, `created_at`) VALUES
 	(41, '::1', 'INPUT', '{"dni":"98765432-1","name":"Maria","last_name":"Lopez","email":"","id_reg":1,"id_com":1}', '2026-01-09 22:00:12'),
 	(42, '::1', 'OUTPUT', '{"success":false,"message":"Error de validaci\\u00f3n: El campo email es requerido"}', '2026-01-09 22:00:12'),
 	(43, '::1', 'INPUT', '[]', '2026-01-09 22:16:18'),
-	(44, '::1', 'OUTPUT', '{"success":false,"message":"El cliente no existe o ya fue eliminado"}', '2026-01-09 22:16:18');
+	(44, '::1', 'OUTPUT', '{"success":false,"message":"El cliente no existe o ya fue eliminado"}', '2026-01-09 22:16:18'),
+	(45, '::1', 'INPUT', '{"dni":"99.999.999-K","id_reg":1,"id_com":1,"email":"test@qa.com","name":"Prueba","last_name":"Final","address":"Avenida Siempre Viva 742"}', '2026-01-10 04:05:15'),
+	(46, '::1', 'OUTPUT', '{"success":true,"message":"Cliente registrado con \\u00e9xito"}', '2026-01-10 04:05:15');
 
 -- Volcando estructura para tabla mydb.personal_access_tokens
 CREATE TABLE IF NOT EXISTS `personal_access_tokens` (
@@ -119,14 +122,15 @@ CREATE TABLE IF NOT EXISTS `personal_access_tokens` (
   `expires_at` datetime NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3;
 
--- Volcando datos para la tabla mydb.personal_access_tokens: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla mydb.personal_access_tokens: ~5 rows (aproximadamente)
 INSERT INTO `personal_access_tokens` (`id`, `email`, `token`, `expires_at`, `created_at`) VALUES
 	(1, 'test@candidato.com', '5d6f44dad580a967ff6e5e8598dad16f8c536cbf', '2026-01-09 20:09:16', '2026-01-09 19:09:16'),
 	(2, 'test@candidato.com', '8fdc6be4d1cf6aa2ce2a2b52c1ad883c049213ce', '2026-01-09 20:52:37', '2026-01-09 19:52:37'),
 	(3, 'tu@email.com', '13992b725cbb873397eda5151c16a247b2f36254', '2026-01-09 22:40:27', '2026-01-09 21:40:27'),
-	(4, 'tu@email.com', '736de67c20553670593061700d9e557f69d0cbf3', '2026-01-09 22:54:25', '2026-01-09 21:54:25');
+	(4, 'tu@email.com', '736de67c20553670593061700d9e557f69d0cbf3', '2026-01-09 22:54:25', '2026-01-09 21:54:25'),
+	(5, 'tu@email.com', 'd2ac9fbb9fb8c555d1b18605c0a6ec161feeaf8c', '2026-01-10 05:04:38', '2026-01-10 04:04:39');
 
 -- Volcando estructura para tabla mydb.regions
 CREATE TABLE IF NOT EXISTS `regions` (
